@@ -9,7 +9,7 @@ st.set_page_config(page_title="Monitor Financeiro", layout="wide")
 st.title("💰 Meu Monitor Financeiro Pessoal")
 
 
-# CATEGORIA 2: PERSISTÊNCIA E GERENCIAMENTO DE DADOS
+# CATEGORIA 2: PERSISTÊNCIA
 
 DATA_FILE = "dados_financeiros.csv"
 
@@ -17,16 +17,22 @@ DATA_FILE = "dados_financeiros.csv"
 def carregar_dados():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
-    else:
-        return pd.DataFrame(
-            columns=["Data", "Tipo", "Categoria", "Valor", "Descrição"]
-        )
+
+    return pd.DataFrame(
+        columns=[
+            "Data",
+            "Tipo",
+            "Categoria",
+            "Valor",
+            "Descrição"
+        ]
+    )
 
 
 df = carregar_dados()
 
 
-# CATEGORIA 3: INTERFACE DE ENTRADA
+# CATEGORIA 3: ENTRADA
 
 st.sidebar.header("Nova Transação")
 
@@ -62,14 +68,16 @@ with st.sidebar.form(
         format="%.2f"
     )
 
-    descricao = st.text_input("Descrição")
+    descricao = st.text_input(
+        "Descrição"
+    )
 
     botao_salvar = st.form_submit_button(
-        label="Adicionar"
+        "Adicionar"
     )
 
 
-# CATEGORIA 4: PROCESSAMENTO E SALVAMENTO
+# CATEGORIA 4: SALVAR
 
 if botao_salvar and valor > 0:
 
@@ -91,10 +99,6 @@ if botao_salvar and valor > 0:
         index=False
     )
 
-    st.sidebar.success(
-        "Salvo com sucesso!"
-    )
-
     st.rerun()
 
 
@@ -102,7 +106,9 @@ if botao_salvar and valor > 0:
 
 if not df.empty:
 
-    df["Valor"] = pd.to_numeric(df["Valor"])
+    df["Valor"] = pd.to_numeric(
+        df["Valor"]
+    )
 
     receitas = (
         df[df["Tipo"] == "Receita"]["Valor"]
@@ -117,8 +123,6 @@ if not df.empty:
     saldo = receitas - despesas
 
 
-    # CORES
-
     cores = {
         "Alimentação": "#FF6B6B",
         "Transporte": "#4ECDC4",
@@ -130,29 +134,25 @@ if not df.empty:
     }
 
 
-    # MÉTRICAS
-
     col1, col2, col3 = st.columns(3)
 
     col1.metric(
-        "Total Receitas",
+        "Receitas",
         f"R$ {receitas:,.2f}"
     )
 
     col2.metric(
-        "Total Despesas",
+        "Despesas",
         f"R$ {despesas:,.2f}"
     )
 
     col3.metric(
-        "Saldo Atual",
+        "Saldo",
         f"R$ {saldo:,.2f}"
     )
 
     st.markdown("---")
 
-
-    # GRÁFICOS
 
     col_g1, col_g2 = st.columns(2)
 
@@ -169,7 +169,7 @@ if not df.empty:
 
         if not df_despesas.empty:
 
-            fig_pizza = px.pie(
+            fig = px.pie(
                 df_despesas,
                 values="Valor",
                 names="Categoria",
@@ -179,14 +179,8 @@ if not df.empty:
             )
 
             st.plotly_chart(
-                fig_pizza,
+                fig,
                 use_container_width=True
-            )
-
-        else:
-
-            st.info(
-                "Nenhuma despesa cadastrada."
             )
 
 
@@ -196,7 +190,7 @@ if not df.empty:
             "📊 Histórico"
         )
 
-        fig_bar = px.bar(
+        fig = px.bar(
             df,
             x="Data",
             y="Valor",
@@ -209,7 +203,7 @@ if not df.empty:
         )
 
         st.plotly_chart(
-            fig_bar,
+            fig,
             use_container_width=True
         )
 
@@ -230,6 +224,79 @@ if not df.empty:
         ),
         use_container_width=True
     )
+
+
+    st.markdown("---")
+
+
+    # GERENCIAMENTO
+
+    st.subheader(
+        "⚙️ Gerenciar Histórico"
+    )
+
+    col_A, col_B = st.columns(2)
+
+
+    with col_A:
+
+        linha = st.selectbox(
+            "Selecione para excluir:",
+            options=df.index,
+            format_func=lambda x:
+            f"{df.loc[x,'Data']} | "
+            f"{df.loc[x,'Tipo']} | "
+            f"R$ {df.loc[x,'Valor']}"
+        )
+
+        if st.button(
+            "🗑️ Excluir Item"
+        ):
+
+            df = df.drop(
+                linha
+            )
+
+            df.to_csv(
+                DATA_FILE,
+                index=False
+            )
+
+            st.success(
+                "Item removido!"
+            )
+
+            st.rerun()
+
+
+    with col_B:
+
+        st.write(
+            "Apagar todos os dados"
+        )
+
+        if st.button(
+            "💥 Limpar Tudo"
+        ):
+
+            pd.DataFrame(
+                columns=[
+                    "Data",
+                    "Tipo",
+                    "Categoria",
+                    "Valor",
+                    "Descrição"
+                ]
+            ).to_csv(
+                DATA_FILE,
+                index=False
+            )
+
+            st.warning(
+                "Histórico apagado!"
+            )
+
+            st.rerun()
 
 
 else:
