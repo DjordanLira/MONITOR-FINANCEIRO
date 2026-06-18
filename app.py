@@ -9,17 +9,19 @@ st.set_page_config(page_title="Monitor Financeiro", layout="wide")
 st.title("💰 Meu Monitor Financeiro Pessoal")
 
 
-#
 # CATEGORIA 2: PERSISTÊNCIA E GERENCIAMENTO DE DADOS
-#
 
 DATA_FILE = "dados_financeiros.csv"
+
 
 def carregar_dados():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
     else:
-        return pd.DataFrame(columns=["Data", "Tipo", "Categoria", "Valor", "Descrição"])
+        return pd.DataFrame(
+            columns=["Data", "Tipo", "Categoria", "Valor", "Descrição"]
+        )
+
 
 df = carregar_dados()
 
@@ -28,7 +30,10 @@ df = carregar_dados()
 
 st.sidebar.header("Nova Transação")
 
-with st.sidebar.form(key="form_transacao", clear_on_submit=True):
+with st.sidebar.form(
+    key="form_transacao",
+    clear_on_submit=True
+):
 
     data = st.date_input("Data")
 
@@ -64,9 +69,7 @@ with st.sidebar.form(key="form_transacao", clear_on_submit=True):
     )
 
 
-#
-# CATEGORIA 4: SALVAR DADOS
-#
+# CATEGORIA 4: PROCESSAMENTO E SALVAMENTO
 
 if botao_salvar and valor > 0:
 
@@ -83,27 +86,38 @@ if botao_salvar and valor > 0:
         ignore_index=True
     )
 
-    df.to_csv(DATA_FILE, index=False)
+    df.to_csv(
+        DATA_FILE,
+        index=False
+    )
 
-    st.sidebar.success("Salvo com sucesso!")
+    st.sidebar.success(
+        "Salvo com sucesso!"
+    )
 
     st.rerun()
 
 
-#
 # CATEGORIA 5: VISUALIZAÇÃO
-#
 
 if not df.empty:
 
     df["Valor"] = pd.to_numeric(df["Valor"])
 
-    receitas = df[df["Tipo"] == "Receita"]["Valor"].sum()
-    despesas = df[df["Tipo"] == "Despesa"]["Valor"].sum()
+    receitas = (
+        df[df["Tipo"] == "Receita"]["Valor"]
+        .sum()
+    )
+
+    despesas = (
+        df[df["Tipo"] == "Despesa"]["Valor"]
+        .sum()
+    )
+
     saldo = receitas - despesas
 
 
-    # CORES (ADICIONADO)
+    # CORES
 
     cores = {
         "Alimentação": "#FF6B6B",
@@ -120,9 +134,20 @@ if not df.empty:
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Total Receitas", f"R$ {receitas:,.2f}")
-    col2.metric("Total Despesas", f"R$ {despesas:,.2f}")
-    col3.metric("Saldo Atual", f"R$ {saldo:,.2f}")
+    col1.metric(
+        "Total Receitas",
+        f"R$ {receitas:,.2f}"
+    )
+
+    col2.metric(
+        "Total Despesas",
+        f"R$ {despesas:,.2f}"
+    )
+
+    col3.metric(
+        "Saldo Atual",
+        f"R$ {saldo:,.2f}"
+    )
 
     st.markdown("---")
 
@@ -134,45 +159,57 @@ if not df.empty:
 
     with col_g1:
 
-        st.subheader("🍕 Gastos por Categoria")
+        st.subheader(
+            "🍕 Gastos por Categoria"
+        )
 
-        df_despesas = df[df["Tipo"] == "Despesa"]
+        df_despesas = (
+            df[df["Tipo"] == "Despesa"]
+        )
 
         if not df_despesas.empty:
 
+            fig_pizza = px.pie(
+                df_despesas,
+                values="Valor",
+                names="Categoria",
+                hole=0.4,
+                color="Categoria",
+                color_discrete_map=cores
+            )
+
             st.plotly_chart(
-                px.pie(
-                    df_despesas,
-                    values="Valor",
-                    names="Categoria",
-                    hole=0.4,
-                    color="Categoria",
-                    color_discrete_map=cores
-                ),
+                fig_pizza,
                 use_container_width=True
             )
 
         else:
 
-            st.info("Nenhuma despesa cadastrada.")
+            st.info(
+                "Nenhuma despesa cadastrada."
+            )
 
 
     with col_g2:
 
-        st.subheader("📊 Histórico")
+        st.subheader(
+            "📊 Histórico"
+        )
+
+        fig_bar = px.bar(
+            df,
+            x="Data",
+            y="Valor",
+            color="Tipo",
+            barmode="group",
+            color_discrete_map={
+                "Receita": "green",
+                "Despesa": "red"
+            }
+        )
 
         st.plotly_chart(
-            px.bar(
-                df,
-                x="Data",
-                y="Valor",
-                color="Tipo",
-                barmode="group",
-                color_discrete_map={
-                    "Receita": "green",
-                    "Despesa": "red"
-                }
-            ),
+            fig_bar,
             use_container_width=True
         )
 
@@ -182,7 +219,9 @@ if not df.empty:
 
     # HISTÓRICO
 
-    st.subheader("📋 Histórico de Transações")
+    st.subheader(
+        "📋 Histórico de Transações"
+    )
 
     st.dataframe(
         df.sort_values(
@@ -196,7 +235,5 @@ if not df.empty:
 else:
 
     st.info(
-        "Use a barra lateral para cadastrar sua primeira transação!"
-    )
         "Use a barra lateral para cadastrar sua primeira transação!"
     )
