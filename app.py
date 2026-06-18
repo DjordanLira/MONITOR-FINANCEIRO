@@ -1,6 +1,6 @@
-# =====================================================================
-# 🏗️ CATEGORIA 1: CONFIGURAÇÕES INICIAIS E IMPORTAÇÕES
-# =====================================================================
+#
+#  CATEGORIA 1: CONFIGURAÇÕES INICIAIS E IMPORTAÇÕES
+# 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -10,9 +10,9 @@ st.set_page_config(page_title="Monitor Financeiro", layout="wide")
 st.title("💰 Meu Monitor Financeiro Pessoal")
 
 
-# =====================================================================
-# 💾 CATEGORIA 2: PERSISTÊNCIA E GERENCIAMENTO DE DADOS
-# =====================================================================
+# 
+#  CATEGORIA 2: PERSISTÊNCIA E GERENCIAMENTO DE DADOS
+#
 DATA_FILE = "dados_financeiros.csv"
 
 def carregar_dados():
@@ -24,9 +24,9 @@ def carregar_dados():
 df = carregar_dados()
 
 
-# =====================================================================
-# 📥 CATEGORIA 3: INTERFACE DE ENTRADA (BARRA LATERAL)
-# =====================================================================
+# 
+#  CATEGORIA 3: INTERFACE DE ENTRADA (BARRA LATERAL)
+# 
 st.sidebar.header("Nova Transação")
 with st.sidebar.form(key="form_transacao", clear_on_submit=True):
     data = st.date_input("Data")
@@ -37,9 +37,9 @@ with st.sidebar.form(key="form_transacao", clear_on_submit=True):
     botao_salvar = st.form_submit_button(label="Adicionar")
 
 
-# =====================================================================
-# ⚡ CATEGORIA 4: PROCESSAMENTO DE GATILHOS E SALVAMENTO
-# =====================================================================
+# 
+# CATEGORIA 4: PROCESSAMENTO DE GATILHOS E SALVAMENTO
+# 
 if botao_salvar and valor > 0:
     nova_linha = pd.DataFrame([{"Data": str(data), "Tipo": tipo, "Categoria": categoria, "Valor": valor, "Descrição": descricao}])
     df = pd.concat([df, nova_linha], ignore_index=True)
@@ -48,9 +48,9 @@ if botao_salvar and valor > 0:
     st.rerun()
 
 
-# =====================================================================
-# 📊 CATEGORIA 5: INTERFACE DE SAÍDA E VISUALIZAÇÃO DO USUÁRIO
-# =====================================================================
+# 
+#  CATEGORIA 5: INTERFACE DE SAÍDA E VISUALIZAÇÃO DO USUÁRIO
+# 
 if not df.empty:
     # --- Processamento interno de exibição ---
     df["Valor"] = pd.to_numeric(df["Valor"])
